@@ -3,6 +3,7 @@ import 'package:bluetooth_print/bluetooth_print_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
+import 'package:greate_places/Screen/HomeScreen.dart';
 import 'package:path/path.dart';
 
 class CustomPrint extends StatefulWidget {
@@ -17,7 +18,7 @@ class _CustomPrintState extends State<CustomPrint> {
   late bool isConnect = false;
   BluetoothDevice? device;
   String message = ' Bluetooth Toggle';
-
+  bool isSearchDevice = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -67,49 +68,85 @@ class _CustomPrintState extends State<CustomPrint> {
       appBar: AppBar(
         title: const Text('Custom Print'),
       ),
-      body: RefreshIndicator(
-        onRefresh: () =>
-            bluetoothPrint.startScan(timeout: const Duration(seconds: 2)),
-        child: ListView(
-          children: [
-            Align(
-              alignment: Alignment.center,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  message,
-                  style: const TextStyle(
-                      fontSize: 15, fontWeight: FontWeight.bold),
+      body: WillPopScope(
+        onWillPop: () async {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+          return false;
+        },
+        child: RefreshIndicator(
+          onRefresh: () =>
+              bluetoothPrint.startScan(timeout: const Duration(seconds: 2)),
+          child: ListView(
+            children: [
+              Align(
+                alignment: Alignment.center,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    message,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
-            ),
-            const Divider(),
-            StreamBuilder<List<BluetoothDevice>>(
-              stream: bluetoothPrint.scanResults,
-              initialData: [],
-              builder: (ctx, snapshot) => Column(
-                children: snapshot.data!
-                    .map((e) => ListTile(
-                          onTap: (){
+              const Divider(),
+              StreamBuilder<List<BluetoothDevice>>(
+                stream: bluetoothPrint.scanResults,
+                initialData: [],
+                builder: (ctx, snapshot) => Column(
+                  children: snapshot.data!
+                      .map((e) => ListTile(
+                            onTap: () {
                               setState(() {
-                                    device = e;
-                                  });
-                                },
-                          leading: const Icon(Icons.print_sharp),
-                          title: Text('${e.name}'),
-                          subtitle: Text('${e.address}'),
-                          trailing: device != null
-                              ? const Icon(
-                                  Icons.check,
-                                  color: Colors.lightGreen,
-                                )
-                              : null,
-                        ))
-                    .toList(),
+                                device = e;
+                              });
+                            },
+                            leading: const Icon(Icons.print_sharp),
+                            title: Text('${e.name}'),
+                            subtitle: Text('${e.address}'),
+                            trailing: device != null
+                                ? const Icon(
+                                    Icons.check,
+                                    color: Colors.lightGreen,
+                                  )
+                                : null,
+                          ))
+                      .toList(),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+      ),
+      floatingActionButton: StreamBuilder<bool>(
+        stream: bluetoothPrint.isScanning,
+        initialData: false,
+        builder: (ctx, snapshop) => snapshop.data == true
+            ? FloatingActionButton(
+                backgroundColor: Colors.red,
+                onPressed: () {
+                  bluetoothPrint.stopScan();
+                  setState(() {
+                    isSearchDevice = !isSearchDevice;
+                  });
+                },
+                child: const Icon(
+                  Icons.stop,
+                  color: Color.fromARGB(255, 255, 255, 255),
+                ))
+            : FloatingActionButton(
+                onPressed: () {
+                  bluetoothPrint.startScan(timeout: const Duration(seconds: 4));
+                  setState(() {
+                    isSearchDevice = !isSearchDevice;
+                  });
+                },
+                child: const Icon(
+                  Icons.search,
+                  color: Color.fromARGB(255, 255, 255, 255),
+                )),
       ),
     );
   }

@@ -1,3 +1,4 @@
+import '../Models/Product.dart';
 import 'package:path/path.dart' as path;
 import 'package:sqflite/sqflite.dart' as sql;
 import 'package:sqflite/sql.dart';
@@ -31,8 +32,24 @@ class Db {
     sqlDb.insert(table, data, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
+  static Future<void> delete(String table,int id) async {
+    final sqlDb = await Db.createDatabase();
+    sqlDb.delete(
+      table,
+      where:'id=?',
+      whereArgs: [id]
+    );
+  }
+
+  static Future<void> updateProduct(int id,Map<String,dynamic> product,String table) async{
+    final sqlDb = await Db.createDatabase();
+    sqlDb.update(table, product,where: 'id=?',whereArgs: [id]);
+  }
+
   static Future<List<Map<String, dynamic?>>> gethDatas(String table) async {
     final sqlDb = await Db.createDatabase();
     return sqlDb.query(table);
   }
+
+
 }

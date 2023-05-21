@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:syncfusion_flutter_barcodes/barcodes.dart';
 // import 'package:flutter/services.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
@@ -15,8 +16,8 @@ class CreateProduct extends StatefulWidget {
 
 class _CreateProductState extends State<CreateProduct> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  late String productName;
-  late int productPrice;
+  String? productName;
+  int? productPrice;
   Barcode? result;
 
   bool isScanned = false;
@@ -25,11 +26,22 @@ class _CreateProductState extends State<CreateProduct> {
 
   Future<void> scanBarCode(QRViewController controller) async {
     controller.scannedDataStream.listen((scanData) {
-      setState(() {
-        result = scanData;
-        isScanned = !isScanned;
-        controller.pauseCamera();
-        return;
+      Provider.of<ProductProvider>(context, listen: false)
+          .searchBarCode(scanData.code!)
+          .then((value) {
+        if (!value) {
+          Alert(context, 'Exists barcode');
+          controller.pauseCamera();
+        } else {
+          setState(() {
+            result = scanData;
+            isScanned = !isScanned;
+            controller.pauseCamera();
+            return;
+          });
+        }
+        Navigator.of(context).pop();
+
       });
     });
   }
@@ -44,23 +56,44 @@ class _CreateProductState extends State<CreateProduct> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               isScanned
-                  ? Text('${result != null ? result?.code : ""}')
+                  ? Container(
+                      alignment: Alignment.center,
+                      height: 100,
+                      width: 300,
+                      child: result != null
+                          ? SfBarcodeGenerator(
+                              value: result!.code,
+                              showValue: true,
+                              textSpacing: 10,
+                            )
+                          : const Text('NUL BAR CODE'),
+                    )
                   : Container(
                       width: 300,
                       height: 300,
                       decoration: BoxDecoration(
-                          border: Border.all(width: .5, color: Colors.black)),
+                        border: Border.all(width: .5, color: Colors.black),
+                      ),
                       child: QRView(
                         key: qrKey,
                         onQRViewCreated: scanBarCode,
-                        overlay: QrScannerOverlayShape(
-                            borderColor: Colors.red,
-                            borderRadius: 10,
-                            borderLength: 30,
-                            borderWidth: 10,
-                            cutOutSize: double.infinity),
                       ),
+                    ),
+              const SizedBox(
+                height: 10,
+              ),
+              isScanned
+                  ? ElevatedButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          isScanned = !isScanned;
+                        });
+                        _createProduct(context);
+                      },
+                      icon: const Icon(Icons.barcode_reader),
+                      label: const Text('Resume'),
                     )
+                  : Container()
             ],
           ),
           actions: <Widget>[
@@ -84,15 +117,45 @@ class _CreateProductState extends State<CreateProduct> {
         actions: [
           IconButton(
               onPressed: () => _createProduct(context),
-              icon: Icon(Icons.barcode_reader))
+              icon: const Icon(Icons.barcode_reader))
         ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
-            Text('Barcode No : ${result != null ? result?.code : "Scan Now"}'),
-            SizedBox(
+            Container(
+              alignment: Alignment.center,
+              height: 150,
+              width: double.infinity,
+              child: result != null
+                  ? ListView(
+                      children: [
+                        Container(
+                          height: 100,
+                          child: SfBarcodeGenerator(
+                            value: result!.code,
+                            showValue: true,
+                            textSpacing: 10,
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              isScanned = !isScanned;
+                            });
+                            _createProduct(context);
+                          },
+                          icon: const Icon(Icons.barcode_reader),
+                          label: const Text('Resume'),
+                        ),
+                      ],
+                    )
+                  : TextButton(
+                      onPressed: () => _createProduct(context),
+                      child: const Text('Scan Now')),
+            ),
+            const SizedBox(
               height: 20,
             ),
             TextField(
@@ -104,7 +167,7 @@ class _CreateProductState extends State<CreateProduct> {
                 productName = value;
               },
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
             TextField(
@@ -117,37 +180,68 @@ class _CreateProductState extends State<CreateProduct> {
                 productPrice = int.tryParse(value) ?? 0;
               },
             ),
-            TextButton(
-              onPressed: ()  {
+            const SizedBox(
+              height: 20,
+            ),
+            InkWell(
+              onTap: () {
                 if (productName == null || productPrice == null) {
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    content: Text(
-                      'Need Some Field',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    backgroundColor: Colors.white,
-                  ));
+                  Alert(context, 'Product name and price required');
                 } else {
-                   Provider.of<ProductProvider>(context, listen: false)
-                      .addProduct(productName, productPrice, result);
-
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    content: Text(
-                      'Success',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    backgroundColor: Colors.white,
-                  ));
-
+                  Provider.of<ProductProvider>(context, listen: false)
+                      .addProduct(productName!, productPrice!, result)
+                      .then(
+                        (value) => value
+                            ? Alert(context, 'Successfully Added')
+                            : Alert(context, 'Already Exists Bar Code'),
+                      );
                   Navigator.pop(context);
                 }
               },
-              child: const Text('Add'),
+              child: Container(
+                height: 60,
+                width: double.infinity,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                    border: Border.all(),
+                    borderRadius: BorderRadius.circular(8)),
+                child: const Text(
+                  'Add',
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void Alert(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(color: Colors.black),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.close,
+                color: Colors.black,
+              ),
+              onPressed: () {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              },
+            ),
+          ],
+        ),
+        duration: const Duration(seconds: 2),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       ),
     );
   }

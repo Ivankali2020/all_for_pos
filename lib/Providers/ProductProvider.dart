@@ -9,23 +9,52 @@ import '../Models/Product.dart';
 
 class ProductProvider with ChangeNotifier {
   List<Product> _items = [];
-  List<Sale> _sales = [];
-
   List<Product> get items {
     return [..._items];
   }
 
+  List<Sale> _sales = [];
   List<Sale> get sales {
     return [..._sales];
   }
 
-  void addProduct(String name, int price, Barcode? barcode) {
-    final data = Db.insert('new_products',
-        {'barcode': barcode?.code, 'name': name, 'price': price});
+  Future<bool> searchBarCode(String barcode) async {
+    final check = _items.where((element) => element.barcode == barcode);
+    if (check.isNotEmpty) {
+      print('shi tal');
+      return false;
+    } else {
+      print('ma shi tal');
+      return true;
+    }
+  }
 
-    _items.add(Product(Random().nextInt(999999), barcode?.code, name, price));
+  Future<bool> addProduct(String name, int price, Barcode? barcode) async {
+    final check = _items.where((element) => element.barcode == barcode);
 
+    if (check.isNotEmpty) {
+      return false;
+    } else {
+      final data = await Db.insert('new_products',
+          {'barcode': barcode?.code, 'name': name, 'price': price});
+
+      _items.add(Product(Random().nextInt(999999), barcode?.code, name, price));
+
+      notifyListeners();
+      return true;
+    }
+  }
+
+  Future<bool> editProduct(
+      String name, int price, String? barcode, int id) async {
+    Map<String, dynamic> product = {
+      'name': name,
+      'price': price,
+      'barcode': barcode
+    };
+    Db.updateProduct(id, product, 'new_products');
     notifyListeners();
+    return true;
   }
 
   Future<void> fetchDatas() async {
@@ -33,31 +62,74 @@ class ProductProvider with ChangeNotifier {
 
     if (data.length > 0) {
       _items = data
-          .map((e) =>
-              Product(e['id'], e['barcode'], e['name'].toString(), e['price']))
+          .map(
+            (e) => Product(
+              e['id'],
+              e['barcode'],
+              e['name'].toString(),
+              e['price'],
+            ),
+          )
           .toList();
     }
   }
 
-  Future<void> searchByBarcode(String? barcode) async {
+  Future<void> deleteProduct(int id) async {
+    Db.delete('new_products', id);
+    notifyListeners();
+  }
+
+  Future<bool> searchByBarcode(String? barcode) async {
     if (barcode != null) {
       final data =
           _items.where((element) => element.barcode == barcode).toList();
+
+      if (data.isEmpty) {
+        return false;
+      }
 
       if (_sales.isNotEmpty) {
         var check =
             _sales.where((element) => element.barcode == barcode).toList();
         if (check.isNotEmpty) {
           //only update quantity
-          check[0].quantity++;
+          // check[0].quantity++;
+          check[0].toggelDone();
         } else {
-          _sales.add(Sale(1, data[0].barcode, data[0].name, data[0].price));
+          _sales.add(Sale(1, data[0].barcode, data[0].name, data[0].price,
+              quantity: 1));
         }
       } else {
-        _sales.add(Sale(1, data[0].barcode, data[0].name, data[0].price));
+        _sales.add(
+            Sale(1, data[0].barcode, data[0].name, data[0].price, quantity: 1));
       }
       totalSales();
       notifyListeners();
+      return true;
+    }
+
+    return false;
+  }
+
+  Future<bool> quantityUpdate(String? barcode, bool isAdd) async {
+    var check = _sales.where((element) => element.barcode == barcode).toList();
+    if (check.isNotEmpty) {
+      //only update quantity
+      if (isAdd) {
+        check[0].toggelDone();
+        notifyListeners();
+      } else {
+        check[0].decreaseDown();
+        if (check[0].quantity == 0) {
+          _sales.removeWhere((element) => element.barcode == barcode);
+          notifyListeners();
+        }
+      }
+      totalSales();
+      notifyListeners();
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -72,5 +144,9 @@ class ProductProvider with ChangeNotifier {
   Future<void> deleteTabale() async {
     await Db.deleteTabel();
     notifyListeners();
+  }
+
+  Future<void> cleanSales() async{
+    _sales = [];
   }
 }
