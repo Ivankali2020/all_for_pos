@@ -12,10 +12,10 @@
 
 * dashboard
 
-    - How many product *
-    - How much sale *
-    - Top 10 Product Lists *
-    - One week sale graph *
+    - How many product
+    - How much sale
+    - Top 3 Highest Sale Product Lists *
+    - One week sale graph **
 
 
 # screenshop here

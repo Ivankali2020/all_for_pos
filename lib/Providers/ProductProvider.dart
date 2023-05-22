@@ -96,12 +96,26 @@ class ProductProvider with ChangeNotifier {
           // check[0].quantity++;
           check[0].toggelDone();
         } else {
-          _sales.add(Sale(1, data[0].barcode, data[0].name, data[0].price,
-              quantity: 1));
+          _sales.add(
+            Sale(
+              data[0].id,
+              data[0].barcode,
+              data[0].name,
+              data[0].price,
+              quantity: 1,
+            ),
+          );
         }
       } else {
         _sales.add(
-            Sale(1, data[0].barcode, data[0].name, data[0].price, quantity: 1));
+          Sale(
+            data[0].id,
+            data[0].barcode,
+            data[0].name,
+            data[0].price,
+            quantity: 1,
+          ),
+        );
       }
       totalSales();
       notifyListeners();
@@ -146,7 +160,7 @@ class ProductProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> cleanSales() async{
+  Future<void> cleanSales() async {
     _sales = [];
   }
 }

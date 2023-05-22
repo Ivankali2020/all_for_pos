@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:greate_places/Helper/Db.dart';
 import 'package:greate_places/Helper/OrderDatabase.dart';
 import 'package:greate_places/Models/Order.dart';
 import 'package:intl/intl.dart';
@@ -9,7 +10,7 @@ import '../Models/Sale.dart';
 class OrderProvider with ChangeNotifier {
   late List<Order> _orders = [];
   late List<Sale> _orderProducts = [];
-
+  late List<Map<String, dynamic>> getMostHightestProducts = [];
   List<Order> get orders {
     return [..._orders];
   }
@@ -47,8 +48,23 @@ class OrderProvider with ChangeNotifier {
     await OrderDatabase.insertOrderProductss(
         'order_products', orderProducts, fees);
 
-
     return true;
+  }
+
+  getTotalOrder() {
+    return _orders.length;
+  }
+
+  getTotalMoney() {
+    late int money = 0;
+    _orders.map((e) => money += e.total_price).toList();
+    return money;
+  }
+
+  Future<void> getMostHightestProduct() async {
+    getMostHightestProducts = [];
+    final data = await Db.getMostHighestProducts();
+    data.map((e) => getMostHightestProducts.add(e)).toList();
   }
 
   Future<void> getOrdersDatas() async {
@@ -96,6 +112,4 @@ class OrderProvider with ChangeNotifier {
 
     notifyListeners();
   }
-
-
 }

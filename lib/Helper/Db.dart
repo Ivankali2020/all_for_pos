@@ -32,18 +32,15 @@ class Db {
     sqlDb.insert(table, data, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  static Future<void> delete(String table,int id) async {
+  static Future<void> delete(String table, int id) async {
     final sqlDb = await Db.createDatabase();
-    sqlDb.delete(
-      table,
-      where:'id=?',
-      whereArgs: [id]
-    );
+    sqlDb.delete(table, where: 'id=?', whereArgs: [id]);
   }
 
-  static Future<void> updateProduct(int id,Map<String,dynamic> product,String table) async{
+  static Future<void> updateProduct(
+      int id, Map<String, dynamic> product, String table) async {
     final sqlDb = await Db.createDatabase();
-    sqlDb.update(table, product,where: 'id=?',whereArgs: [id]);
+    sqlDb.update(table, product, where: 'id=?', whereArgs: [id]);
   }
 
   static Future<List<Map<String, dynamic?>>> gethDatas(String table) async {
@@ -51,5 +48,9 @@ class Db {
     return sqlDb.query(table);
   }
 
-
+  static Future<List<Map<String, dynamic>>> getMostHighestProducts() async {
+    final sqlDb = await Db.createDatabase();
+    return sqlDb.rawQuery(
+        "SELECT new_products.id,new_products.barcode,new_products.name,SUM(order_products.total) as total_sales FROM new_products JOIN order_products ON new_products.id = order_products.product_id GROUP BY new_products.id,new_products.name ORDER BY total_sales DESC");
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:greate_places/Models/TransitionPage.dart';
+import 'package:greate_places/Screen/Dashboard.dart';
 import 'package:greate_places/Screen/HomeScreen.dart';
 
 class DrawerWidget extends StatelessWidget {
@@ -19,7 +20,7 @@ class DrawerWidget extends StatelessWidget {
               ),
               InkWell(
                 onTap: () {
-                  Navigator.of(context).push(fadePageRoute('home', HomeScreen()));
+                  Navigator.of(context).push(fadePageRoute('dashboard', Dasboard()));
                 },
                 child: Container(
                   alignment: Alignment.center,
