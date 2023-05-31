@@ -26,8 +26,32 @@
 
 # screenshop here
 
-![Home Screen](https://ibb.co/ZxmDR02)
-![Product Add Screen](https://ibb.co/NKX8L2y)
-![Product Add ](https://drive.google.com/file/d/1o66GJxZ2z4Qw7m7t00eS-KaG6m3alAiz/view?usp=share_link)
+![Home Screen](https://github.com/Ivankali2020/all_for_pos/blob/main/lib/assets/home.jpeg?raw=true)
 
+![dashboard Screen](https://github.com/Ivankali2020/all_for_pos/blob/main/lib/assets/dashboard.jpeg?raw=true)
+
+![Add Product](https://github.com/Ivankali2020/all_for_pos/blob/main/lib/assets/addproductwithscanner.jpeg?raw=true)
+
+![Add Product](https://github.com/Ivankali2020/all_for_pos/blob/main/lib/assets/addProduct.jpeg?raw=true)
+
+
+![Add Category](https://github.com/Ivankali2020/all_for_pos/blob/main/lib/assets/createCategroy.jpeg?raw=true)
+
+
+![Add Category](https://github.com/Ivankali2020/all_for_pos/blob/main/lib/assets/categories.jpeg?raw=true)
+
+![Order Detail](https://github.com/Ivankali2020/all_for_pos/blob/main/lib/assets/orderDetail.jpeg?raw=true)
+
+![Order Detail](https://github.com/Ivankali2020/all_for_pos/blob/main/lib/assets/orderUSer.jpeg?raw=true)
+
+![Order Detail](https://github.com/Ivankali2020/all_for_pos/blob/main/lib/assets/orders.jpeg?raw=true)
+
+![Order Detail](https://github.com/Ivankali2020/all_for_pos/blob/main/lib/assets/printer.jpeg?raw=true)
+
+![Order Detail](https://github.com/Ivankali2020/all_for_pos/blob/main/lib/assets/saleProduct.jpeg?raw=true)
+
+![Order Detail](https://github.com/Ivankali2020/all_for_pos/blob/main/lib/assets/saleProductWithSelect.jpeg?raw=true)
+
+![Order Detail](https://github.com/Ivankali2020/all_for_pos/blob/main/lib/assets/saleproductwithscanner.jpeg?raw=true)
 * will be update soon .....
+
