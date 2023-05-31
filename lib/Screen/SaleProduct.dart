@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:greate_places/Models/Sale.dart';
-import 'package:greate_places/Models/TransitionPage.dart';
-import 'package:greate_places/Providers/OrderProvider.dart';
-import 'package:greate_places/Providers/ProductProvider.dart';
+import 'package:pos/Models/Product.dart';
+import '../Models/Sale.dart';
+import '../Models/TransitionPage.dart';
+import '../Providers/OrderProvider.dart';
+import '../Providers/ProductProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
@@ -40,17 +41,138 @@ class _SaleProductState extends State<SaleProduct> {
     });
   }
 
+  Future selectProducts(BuildContext context, List<Product> products) async {
+    return showModalBottomSheet(
+      isScrollControlled: true,
+      context: context,
+      builder: (_) {
+        return Consumer<ProductProvider>(
+          builder: (context, value, child) {
+            return value.items.isEmpty
+                ? const Center(
+                    child: Text('no products'),
+                  )
+                : Container(
+                    height: 300,
+                    padding: const EdgeInsets.all(8.0),
+                    child: GridView.builder(
+                      itemCount: value.items.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisSpacing: 5,
+                        crossAxisCount: 3,
+                        childAspectRatio: 1.3,
+                      ),
+                      itemBuilder: (context, i) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: InkWell(
+                            onTap: () {
+                              Provider.of<ProductProvider>(context,
+                                      listen: false)
+                                  .searchByBarcode(value.items[i].barcode)
+                                  .then((value) {
+                                if (!value) {
+                                  Alert(
+                                    'Barcode is not find our database',
+                                    Color.fromARGB(255, 255, 255, 255),
+                                    context,
+                                  );
+                                }
+                              });
+                            },
+                            child: Stack(
+                              children: [
+                                Positioned(
+                                  right: 3,
+                                  top: 3,
+                                  child: Container(
+                                    height: 18,
+                                    width: 18,
+                                    decoration: BoxDecoration(
+                                        color: value.items[i].isChoose
+                                            ? Colors.greenAccent
+                                            : Colors.grey,
+                                        borderRadius:
+                                            BorderRadius.circular(50)),
+                                    child: Icon(
+                                      Icons.check,
+                                      color: value.items[i].isChoose
+                                          ? Colors.white
+                                          : Colors.black,
+                                      size: 15,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Container(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        FittedBox(
+                                          alignment: Alignment.center,
+                                          child: Text(
+                                            value.items[i].name,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        FittedBox(
+                                          child: Text(
+                                            'cat : ${value.items[i].category}',
+                                            style:
+                                                const TextStyle(fontSize: 12),
+                                          ),
+                                        ),
+                                        FittedBox(
+                                          child: Text(
+                                            'price : ${value.items[i].price}',
+                                            style:
+                                                const TextStyle(fontSize: 12),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final products = Provider.of<ProductProvider>(context, listen: false).items;
     // final sales = Provider.of<ProductProvider>(context).sales;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(title: const Text('Sale Product')),
-      body: ListView(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           isScan
-              ? Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Expanded(
+              ? Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -61,36 +183,69 @@ class _SaleProductState extends State<SaleProduct> {
                           decoration: BoxDecoration(border: Border.all()),
                           child: QRView(key: key, onQRViewCreated: scanBarCode),
                         ),
-                        ElevatedButton.icon(
-                          onPressed: () async {
-                            await controller?.resumeCamera();
-                          },
-                          icon: const Icon(Icons.restore),
-                          label: const Text('Resume'),
-                        ),
+                        Row(
+                          children: [
+                            ElevatedButton.icon(
+                              onPressed: () async {
+                                await controller?.resumeCamera();
+                              },
+                              icon: const Icon(Icons.restore),
+                              label: const Text('Resume'),
+                            ),
+                            ElevatedButton.icon(
+                              onPressed: () async {
+                                return selectProducts(context, products);
+                              },
+                              icon: const Icon(Icons.shopping_cart),
+                              label: const Text('Select Products'),
+                            ),
+                          ],
+                        )
                       ],
                     ),
                   ),
                 )
-              : Center(
-                  child: ElevatedButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          isScan = true;
-                        });
-                      },
-                      icon: const Icon(Icons.scanner_outlined),
-                      label: const Text('Scan Now')),
+              : Column(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.all(10),
+                      alignment: Alignment.center,
+                      width: double.infinity,
+                      height: 200,
+                      decoration: BoxDecoration(border: Border.all()),
+                      child: const Text('Scanner'),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              isScan = true;
+                            });
+                          },
+                          icon: const Icon(Icons.scanner_outlined),
+                          label: const Text('Scan Now'),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            return selectProducts(context, products);
+                          },
+                          icon: const Icon(Icons.shopping_cart),
+                          label: const Text('Select Products'),
+                        ),
+                      ],
+                    )
+                  ],
                 ),
-          SizedBox(
-            height: 500,
-            child: Consumer<ProductProvider>(
-              builder: (ctx, value, child) => value.sales.length > 0
-                  ? SaleProducts(value.sales)
-                  : const Center(
+          Consumer<ProductProvider>(
+            builder: (ctx, value, child) => value.sales.length > 0
+                ? SaleProducts(value.sales)
+                : const Expanded(
+                    child: Center(
                       child: Text('No Sales'),
                     ),
-            ),
+                  ),
           )
         ],
       ),
@@ -102,6 +257,7 @@ class SaleProducts extends StatefulWidget {
   late List<Sale> sales = [];
   SaleProducts(this.sales);
   late bool isLoading = false;
+
   @override
   State<SaleProducts> createState() => _SaleProductsState();
 }
@@ -112,6 +268,16 @@ class _SaleProductsState extends State<SaleProducts> {
   TextEditingController name_controller = TextEditingController();
   TextEditingController phone_controller = TextEditingController();
   TextEditingController address_controller = TextEditingController();
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    delivery_fees_controller.dispose();
+    name_controller.dispose();
+    phone_controller.dispose();
+    address_controller.dispose();
+    super.dispose();
+  }
 
   void _submitForm() async {
     if (widget.sales.isEmpty || delivery_fees_controller.text == null) {
@@ -128,20 +294,18 @@ class _SaleProductsState extends State<SaleProducts> {
 
       Provider.of<ProductProvider>(context, listen: false).cleanSales();
 
-
-      await Provider.of<OrderProvider>(context, listen: false).addOrders(
+      await Provider.of<OrderProvider>(context, listen: false)
+          .addOrders(
         widget.sales.toList(),
         name_controller.text,
         phone_controller.text,
         address_controller.text,
         int.parse(delivery_fees_controller.text),
         Provider.of<ProductProvider>(context, listen: false).total,
-      ).then((value){
-
+      )
+          .then((value) {
         Navigator.of(context).pushReplacementNamed('print');
       });
-
-
     }
   }
 
@@ -251,13 +415,15 @@ class _SaleProductsState extends State<SaleProducts> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
+        SizedBox(
+          height: 400,
           child: ListView.builder(
             itemCount: widget.sales.length,
             itemBuilder: (c, i) => ListTile(
               title: Text(
-                widget.sales[i].name,
+                widget.sales[i].product_name,
                 style:
                     const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
               ),

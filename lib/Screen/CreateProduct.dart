@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pos/Models/Category.dart';
+import 'package:pos/Providers/CategoryProvider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:syncfusion_flutter_barcodes/barcodes.dart';
 // import 'package:flutter/services.dart';
@@ -19,7 +21,7 @@ class _CreateProductState extends State<CreateProduct> {
   String? productName;
   int? productPrice;
   Barcode? result;
-
+  Category? selectedCategory;
   bool isScanned = false;
 
   late QRViewController? controller;
@@ -41,7 +43,6 @@ class _CreateProductState extends State<CreateProduct> {
           });
         }
         Navigator.of(context).pop();
-
       });
     });
   }
@@ -159,9 +160,13 @@ class _CreateProductState extends State<CreateProduct> {
               height: 20,
             ),
             TextField(
+              scrollPadding: EdgeInsets.all(10),
               decoration: const InputDecoration(
+                contentPadding: EdgeInsets.all(14),
                 labelText: 'Product Name',
-                border: OutlineInputBorder(gapPadding: 1),
+                border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey),
+                    borderRadius: BorderRadius.all(Radius.circular(8))),
               ),
               onChanged: (value) {
                 productName = value;
@@ -171,9 +176,13 @@ class _CreateProductState extends State<CreateProduct> {
               height: 20,
             ),
             TextField(
+              scrollPadding: EdgeInsets.all(10),
               decoration: const InputDecoration(
+                contentPadding: EdgeInsets.all(14),
                 labelText: 'Product Price',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey),
+                    borderRadius: BorderRadius.all(Radius.circular(8))),
               ),
               keyboardType: TextInputType.number,
               onChanged: (value) {
@@ -183,13 +192,54 @@ class _CreateProductState extends State<CreateProduct> {
             const SizedBox(
               height: 20,
             ),
+            Consumer<CategoryProvider>(
+              builder: (context, value, child) {
+                if (value.categories.isEmpty) {
+                  value.getCategories();
+                }
+                return value.categories.isEmpty
+                    ? const CircularProgressIndicator()
+                    : Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8.0),
+                          border: Border.all(color: Colors.grey),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton(
+                            value: selectedCategory,
+                            icon: const Icon(Icons.arrow_drop_down),
+                            iconSize: 24,
+                            elevation: 16,
+                            style: TextStyle(color: Colors.black, fontSize: 16),
+                            underline: Container(),
+                            items: value.categories.map((e) {
+                              return DropdownMenuItem(
+                                value: e,
+                                child: Text(e.name),
+                              );
+                            }).toList(),
+                            onChanged: (val) {
+                              setState(() {
+                                selectedCategory = val;
+                              });
+                            },
+                          ),
+                        ),
+                      );
+              },
+            ),
+            const SizedBox(
+              height: 20,
+            ),
             InkWell(
               onTap: () {
-                if (productName == null || productPrice == null) {
-                  Alert(context, 'Product name and price required');
+                if (productName == null || productPrice == null || selectedCategory == null) {
+                  Alert(context, 'Product name and price and category required');
                 } else {
                   Provider.of<ProductProvider>(context, listen: false)
-                      .addProduct(productName!, productPrice!, result)
+                      .addProduct(productName!, productPrice!, result,selectedCategory!)
                       .then(
                         (value) => value
                             ? Alert(context, 'Successfully Added')
@@ -199,11 +249,11 @@ class _CreateProductState extends State<CreateProduct> {
                 }
               },
               child: Container(
-                height: 60,
+                height: 50,
                 width: double.infinity,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                    border: Border.all(),
+                    border: Border.all(color: Colors.grey),
                     borderRadius: BorderRadius.circular(8)),
                 child: const Text(
                   'Add',

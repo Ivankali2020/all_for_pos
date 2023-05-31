@@ -1,13 +1,15 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:greate_places/Models/Sale.dart';
+import 'package:pos/Models/Category.dart';
+import '../Models/Sale.dart';
 import '../Helper/Db.dart';
 import '../Screen/SaleProduct.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import '../Models/Product.dart';
 
 class ProductProvider with ChangeNotifier {
+  late bool isCreateDatabases = false;
   List<Product> _items = [];
   List<Product> get items {
     return [..._items];
@@ -21,7 +23,6 @@ class ProductProvider with ChangeNotifier {
   Future<bool> searchBarCode(String barcode) async {
     final check = _items.where((element) => element.barcode == barcode);
     if (check.isNotEmpty) {
-      print('shi tal');
       return false;
     } else {
       print('ma shi tal');
@@ -29,28 +30,46 @@ class ProductProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> addProduct(String name, int price, Barcode? barcode) async {
+  Future<bool> addProduct(
+      String name, int price, Barcode? barcode, Category category) async {
     final check = _items.where((element) => element.barcode == barcode);
 
     if (check.isNotEmpty) {
       return false;
     } else {
-      final data = await Db.insert('new_products',
-          {'barcode': barcode?.code, 'name': name, 'price': price});
+      final data = await Db.insert(
+        'new_products',
+        {
+          'barcode': barcode?.code,
+          'name': name,
+          'price': price,
+          'category_id': category.id,
+        },
+      );
 
-      _items.add(Product(Random().nextInt(999999), barcode?.code, name, price));
+      _items.add(
+        Product(
+          Random().nextInt(999999),
+          barcode?.code,
+          name,
+          price,
+          category.id,
+          category.name,
+        ),
+      );
 
       notifyListeners();
       return true;
     }
   }
 
-  Future<bool> editProduct(
-      String name, int price, String? barcode, int id) async {
+  Future<bool> editProduct(String name, int price, String? barcode, int id,
+      Category category) async {
     Map<String, dynamic> product = {
       'name': name,
       'price': price,
-      'barcode': barcode
+      'barcode': barcode,
+      'category_id': category.id,
     };
     Db.updateProduct(id, product, 'new_products');
     notifyListeners();
@@ -58,17 +77,17 @@ class ProductProvider with ChangeNotifier {
   }
 
   Future<void> fetchDatas() async {
+    if (!isCreateDatabases) {
+      print('CREAATE');
+      await Db.createAllDatabases();
+      isCreateDatabases = true;
+    }
     final data = await Db.gethDatas('new_products');
-
     if (data.length > 0) {
       _items = data
           .map(
-            (e) => Product(
-              e['id'],
-              e['barcode'],
-              e['name'].toString(),
-              e['price'],
-            ),
+            (e) => Product(e['id'], e['barcode'], e['name'].toString(),
+                e['price'], e['category_id'], e['category_name']),
           )
           .toList();
     }
@@ -83,7 +102,9 @@ class ProductProvider with ChangeNotifier {
     if (barcode != null) {
       final data =
           _items.where((element) => element.barcode == barcode).toList();
-
+      final p = _items.map((element) => element.barcode == barcode).toList();
+      print(p);
+      print(barcode);
       if (data.isEmpty) {
         return false;
       }
@@ -92,8 +113,7 @@ class ProductProvider with ChangeNotifier {
         var check =
             _sales.where((element) => element.barcode == barcode).toList();
         if (check.isNotEmpty) {
-          //only update quantity
-          // check[0].quantity++;
+          //update quantity
           check[0].toggelDone();
         } else {
           _sales.add(
@@ -101,10 +121,16 @@ class ProductProvider with ChangeNotifier {
               data[0].id,
               data[0].barcode,
               data[0].name,
+              data[0].category,
               data[0].price,
               quantity: 1,
             ),
           );
+          _items
+              .where((element) => element.barcode == barcode)
+              .toList()[0]
+              .toogleChoose();
+          notifyListeners();
         }
       } else {
         _sales.add(
@@ -112,10 +138,16 @@ class ProductProvider with ChangeNotifier {
             data[0].id,
             data[0].barcode,
             data[0].name,
+            data[0].category,
             data[0].price,
             quantity: 1,
           ),
         );
+        _items
+            .where((element) => element.barcode == barcode)
+            .toList()[0]
+            .toogleChoose();
+        notifyListeners();
       }
       totalSales();
       notifyListeners();
@@ -155,10 +187,10 @@ class ProductProvider with ChangeNotifier {
         .reduce((value, element) => value + element);
   }
 
-  Future<void> deleteTabale() async {
-    await Db.deleteTabel();
-    notifyListeners();
-  }
+  // Future<void> deleteTabale() async {
+  //   await Db.deleteTabel();
+  //   notifyListeners();
+  // }
 
   Future<void> cleanSales() async {
     _sales = [];

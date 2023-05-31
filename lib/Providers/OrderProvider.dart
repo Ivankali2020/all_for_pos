@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:greate_places/Helper/Db.dart';
-import 'package:greate_places/Helper/OrderDatabase.dart';
-import 'package:greate_places/Models/Order.dart';
+import '../Helper/Db.dart';
+import '../Helper/OrderDatabase.dart';
+import '../Models/Order.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -64,6 +64,9 @@ class OrderProvider with ChangeNotifier {
   Future<void> getMostHightestProduct() async {
     getMostHightestProducts = [];
     final data = await Db.getMostHighestProducts();
+    if (data.isEmpty) {
+      return;
+    }
     data.map((e) => getMostHightestProducts.add(e)).toList();
   }
 
@@ -101,7 +104,8 @@ class OrderProvider with ChangeNotifier {
               Sale(
                 e['id'],
                 e['barcode'],
-                e['name'],
+                e['product_name'],
+                e['category_name'],
                 e['product_price'],
                 quantity: e['quantity'],
               ),

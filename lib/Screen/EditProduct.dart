@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:greate_places/Models/Product.dart';
+import 'package:pos/Models/Category.dart';
+import 'package:pos/Providers/CategoryProvider.dart';
+import '../Models/Product.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:syncfusion_flutter_barcodes/barcodes.dart';
 import '../Providers/ProductProvider.dart';
@@ -18,13 +20,16 @@ class EditProduct extends StatefulWidget {
 class _EditProductState extends State<EditProduct> {
   TextEditingController nameController = TextEditingController();
   TextEditingController priceController = TextEditingController();
+  Category? selectedCategory;
 
   @override
   void initState() {
-    // TODO: implement initState
+    // print(widget.product.category); // TODO: implement initState
     nameController.text = widget.product.name;
     priceController.text = widget.product.price.toString();
     super.initState();
+
+    // selectedCategory = ;
   }
 
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
@@ -39,7 +44,7 @@ class _EditProductState extends State<EditProduct> {
           .then((value) {
         if (!value) {
           Alert(context, 'Exists barcode');
-          Navigator.of(context).pop();
+          // Navigator.of(context).pop();
         } else {
           setState(() {
             result = scanData;
@@ -160,22 +165,66 @@ class _EditProductState extends State<EditProduct> {
               controller: priceController,
             ),
             const SizedBox(
+              height: 20,
+            ),
+            Consumer<CategoryProvider>(
+              builder: (context, value, child) {
+                if (value.categories.isEmpty) {
+                  value.getCategories();
+                }
+                return value.categories.isEmpty
+                    ? const CircularProgressIndicator()
+                    : Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8.0),
+                          border: Border.all(color: Colors.grey),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton(
+                            value: selectedCategory,
+                            icon: const Icon(Icons.arrow_drop_down),
+                            iconSize: 24,
+                            elevation: 16,
+                            style:const TextStyle(color: Colors.black, fontSize: 16),
+                            underline: Container(),
+                            items: value.categories.map((e) {
+                              return DropdownMenuItem(
+                                value: e,
+                                child: Text(e.name),
+                              );
+                            }).toList(),
+                            onChanged: (val) {
+                              setState(() {
+                                selectedCategory = val;
+                              });
+                            },
+
+                          ),
+                        ),
+                      );
+              },
+            ),
+            const SizedBox(
               height: 30,
             ),
             ElevatedButton.icon(
               onPressed: () async {
                 if (nameController.text == null ||
-                    priceController.text == null) {
+                    priceController.text == null ||
+                    selectedCategory == null) {
                   Alert(context, 'Product name and price required');
                 } else {
-                 await Provider.of<ProductProvider>(context, listen: false)
+                  await Provider.of<ProductProvider>(context, listen: false)
                       .editProduct(
                           nameController.text,
                           int.parse(priceController.text),
                           result != null
                               ? result!.code
                               : widget.product.barcode,
-                          widget.product.id)
+                          widget.product.id,
+                          selectedCategory!)
                       .then((value) => value
                           ? Alert(context, 'Successfully Added')
                           : Alert(context, 'Already Exists Bar Code'));

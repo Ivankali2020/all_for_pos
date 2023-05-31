@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:greate_places/Providers/OrderProvider.dart';
-import 'package:greate_places/Providers/ProductProvider.dart';
+import '../Providers/OrderProvider.dart';
+import '../Providers/ProductProvider.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 

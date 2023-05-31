@@ -25,6 +25,7 @@ class OrderDatabase {
     final tables = await db
         .query('sqlite_master', where: 'type = ?', whereArgs: ['table']);
     tables.forEach((table) {
+      print(table);
       if (table['name'] == tableName) {
         check = true;
       }
@@ -45,15 +46,15 @@ class OrderDatabase {
     final check = await OrderDatabase.checkTableExists('orders');
 
     if (check) {
-        final db = await getDatabasePath();
-        final id = await db.insert(table, order,
-            conflictAlgorithm: ConflictAlgorithm.replace);
-        return id;
-      }
-        final db = await OrderDatabase.createOrdersDatabases();
-        final id = await db.insert(table, order,
-            conflictAlgorithm: ConflictAlgorithm.replace);
-        return id;
+      final db = await getDatabasePath();
+      final id = await db.insert(table, order,
+          conflictAlgorithm: ConflictAlgorithm.replace);
+      return id;
+    }
+    final db = await OrderDatabase.createOrdersDatabases();
+    final id = await db.insert(table, order,
+        conflictAlgorithm: ConflictAlgorithm.replace);
+    return id;
   }
 
   static Future<void> insertOrderProductss(
@@ -77,12 +78,20 @@ class OrderDatabase {
 
   static Future<List<Map<String, dynamic>>> getOrdersData() async {
     final db = await OrderDatabase.getDatabasePath();
-    return db.rawQuery('SELECT * FROM orders ORDER BY id DESC');
+    final check = await OrderDatabase.checkTableExists('orders');
+
+    if (check) {
+      return db.rawQuery('SELECT * FROM orders ORDER BY id DESC');
+    } else {
+      final List<Map<String, dynamic>> data = [];
+      return data;
+    }
   }
 
   static Future<List<Map<String, dynamic>>> getOrderProductDatas(
       int order_id) async {
     final db = await OrderDatabase.getDatabasePath();
-    return db.rawQuery('SELECT * FROM order_products LEFT JOIN new_products ON order_products.product_id=new_products.id WHERE order_id=$order_id ');
+    return db.rawQuery(
+        'SELECT *,categories.name AS category_name,new_products.name AS product_name FROM order_products LEFT JOIN new_products ON order_products.product_id=new_products.id  LEFT JOIN categories ON categories.id = new_products.category_id WHERE order_id=$order_id ');
   }
 }

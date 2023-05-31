@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:greate_places/Providers/OrderProvider.dart';
-import 'package:greate_places/Screen/OrderDetailScreen.dart';
-import 'package:greate_places/Screen/OrderScreen.dart';
+import 'package:pos/Helper/Db.dart';
+import 'package:pos/Providers/CategoryProvider.dart';
+import '../Screen/Category/CreateCategory.dart';
+import '../Providers/OrderProvider.dart';
+import '../Screen/OrderDetailScreen.dart';
+import '../Screen/OrderScreen.dart';
 import './Screen/CustomPrint.dart';
-import './Screen/PrintScreen.dart';
 import './Screen/SaleProduct.dart';
 import './Screen/CreateProduct.dart';
 import './Providers/ProductProvider.dart';
@@ -23,7 +25,8 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: ProductProvider()),
-        ChangeNotifierProvider.value(value: OrderProvider())
+        ChangeNotifierProvider.value(value: OrderProvider()),
+        ChangeNotifierProvider.value(value: CategoryProvider())
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
@@ -38,9 +41,9 @@ class MyApp extends StatelessWidget {
           'print': (context) => CustomPrint(),
           'printCustom': (context) => CustomPrint(),
           'orders': (context) => OrderScreen(),
-          'detail' :(context) => OrderDetailScreen(),
-          'home' :(context) => HomeScreen()
-
+          'detail': (context) => OrderDetailScreen(),
+          'home': (context) => HomeScreen(),
+          'category': (context) => CreateCategory()
         },
       ),
     );

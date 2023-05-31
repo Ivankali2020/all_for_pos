@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:greate_places/Models/Order.dart';
-import 'package:greate_places/Providers/OrderProvider.dart';
+import '../Models/Order.dart';
+import '../Providers/OrderProvider.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -111,17 +111,32 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                           color: Colors.black26, width: 0.5),
                                       borderRadius: BorderRadius.circular(8)),
                                   child: ListTile(
-                                    title: Text(orderProducts[i].name),
-                                    subtitle: Text((orderProducts[i].price *
-                                            orderProducts[i].quantity)
-                                        .toString()),
-                                    trailing: Column(
+                                    title: Text(orderProducts[i].product_name),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                            '${orderProducts[i].price.toString()} Ks'),
-                                        const SizedBox(
-                                          height: 10,
+                                          'Price : ${(orderProducts[i].price)
+                                                  .toString() } ks',
+                                          style: const TextStyle(
+                                              fontSize: 12, color: Colors.grey),
                                         ),
+                                        Text(
+                                          'Category : ${orderProducts[i].category_name}',
+                                          style: const TextStyle(
+                                              fontSize: 12, color: Colors.grey),
+                                        ),
+                                      ],
+                                    ),
+                                    trailing: Column(
+                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                             'Total : ${(orderProducts[i].price *
+                                                      orderProducts[i].quantity).toString()} Ks'),
+                                       
                                         Text(
                                             "x ${orderProducts[i].quantity.toString()} qty"),
                                       ],

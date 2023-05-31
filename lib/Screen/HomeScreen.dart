@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:greate_places/Models/TransitionPage.dart';
-import 'package:greate_places/Screen/CreateProduct.dart';
-import 'package:greate_places/Screen/SaleProduct.dart';
-import 'package:greate_places/Widegets/DrawerWidget.dart';
-import 'package:greate_places/Widegets/ProductsWidgets.dart';
+import '../Models/TransitionPage.dart';
+import '../Screen/CreateProduct.dart';
+import '../Screen/SaleProduct.dart';
+import '../Widegets/DrawerWidget.dart';
+import '../Widegets/ProductsWidgets.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 // import 'package:flutter/services.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -13,7 +13,7 @@ import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({super.key});
-
+  
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
-import 'package:greate_places/Models/TransitionPage.dart';
-import 'package:greate_places/Providers/OrderProvider.dart';
-import 'package:greate_places/Screen/OrderDetailScreen.dart';
+import '../Models/TransitionPage.dart';
+import '../Providers/OrderProvider.dart';
+import '../Screen/OrderDetailScreen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -60,16 +60,17 @@ class _OrderScreenState extends State<OrderScreen> {
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
                                   Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      const Text(
-                                        'Order No :',
-                                        style: TextStyle(
+                                       const Icon(Icons.shopping_bag_outlined),
+                                       Text(
+                                        'Order No : # ${orders[i].id.toString()}',
+                                        style:const TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.bold),
                                       ),
-                                      Text(orders[i].id.toString()),
                                     ],
                                   ),
                                   const SizedBox(

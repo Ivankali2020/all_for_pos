@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:greate_places/Models/Product.dart';
-import 'package:greate_places/Models/TransitionPage.dart';
-import 'package:greate_places/Screen/EditProduct.dart';
+import '../Models/Product.dart';
+import '../Models/TransitionPage.dart';
+import '../Screen/EditProduct.dart';
 import 'package:path/path.dart';
 import '../Providers/ProductProvider.dart';
 import 'package:provider/provider.dart';
@@ -50,7 +50,7 @@ class ProductWidgets extends StatelessWidget {
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('PRICE : ${value.items[i].price}'),
+                      Text('PRICE : ${value.items[i].price} CAT : ${value.items[i].category}' ),
                       Text('BARCODE : ${value.items[i].barcode}')
                     ],
                   ),

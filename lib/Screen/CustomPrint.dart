@@ -3,7 +3,7 @@ import 'package:bluetooth_print/bluetooth_print_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
-import 'package:greate_places/Screen/HomeScreen.dart';
+import '../Screen/HomeScreen.dart';
 import 'package:path/path.dart';
 
 class CustomPrint extends StatefulWidget {
